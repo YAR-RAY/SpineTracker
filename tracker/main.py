@@ -33,14 +33,14 @@ pose_detector = vision.PoseLandmarker.create_from_options(pose_options)
 blink_counter = 0
 frame_counter = 0
 base_shoulder_distance = None
-base_neck_distance = None  # Новая эталонная переменная для шеи
+base_neck_distance = None  
 
 calibration_frames = 0
 calibration_shoulders = []
-calibration_necks = []  # Список для калибровки шеи
+calibration_necks = []
 
 cap = cv2.VideoCapture(0)
-print("\n ИИ Движок запущен в безопасном режиме. Сядьте ровно...")
+print("\n Сядьте ровно...")
 
 while cap.isOpened():
     success, frame = cap.read()
@@ -58,10 +58,9 @@ while cap.isOpened():
     status_text = "Status: Searching for user..."
     color = (128, 128, 128)
     
-    # --- 1. ОБРАБОТКА ОСАНКИ ---
+    
     if pose_result and pose_result.pose_landmarks and len(pose_result.pose_landmarks) > 0:
         if base_shoulder_distance is None:
-            # Во время калибровки просто собираем текущие значения
             _, _, cur_sh, cur_nk = validators.check_posture(pose_result, None, None, config)
             calibration_shoulders.append(cur_sh)
             calibration_necks.append(cur_nk)
@@ -72,22 +71,20 @@ while cap.isOpened():
             if calibration_frames >= 30:
                 base_shoulder_distance = sum(calibration_shoulders) / len(calibration_shoulders)
                 base_neck_distance = sum(calibration_necks) / len(calibration_necks)
-                print(f" Калибровка завершена!")
+                print(f"Калибровка завершена!")
                 print(f"Базовые плечи: {base_shoulder_distance:.4f}, Базовая шея: {base_neck_distance:.4f}")
         else:
             status_text = "Status: OK"
             color = (0, 255, 0)
             
-            # Передаем обе базовые переменные
             is_leaning, is_slouching, _, _ = validators.check_posture(pose_result, base_shoulder_distance, base_neck_distance, config)
             if is_leaning:
-                status_text = "WARNING: Too close to monitor!"
+                status_text = "Too close to monitor!"
                 color = (0, 0, 255)
             elif is_slouching:
-                status_text = "WARNING: Don't slouch!"
+                status_text = "Don't slouch!"
                 color = (0, 165, 255)
 
-    # --- 2. ОБРАБОТКА МОРГАНИЯ ---
     if face_result and face_result.face_landmarks and len(face_result.face_landmarks) > 0:
         actual_face_landmarks = face_result.face_landmarks[0]
         landmarks = [(int(lm.x * w_img), int(lm.y * h_img)) for lm in actual_face_landmarks]
@@ -96,7 +93,7 @@ while cap.isOpened():
             left_ear_val = validators.calculate_ear(landmarks, config.LEFT_EYE)
             right_ear_val = validators.calculate_ear(landmarks, config.RIGHT_EYE)
             avg_ear = (left_ear_val + right_ear_val) / 2.0
-            
+            cv2.putText(frame, f"EAR: {avg_ear:.3f}", (30, 160), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
             if avg_ear < config.EAR_THRESHOLD:
                 frame_counter += 1
             else:
@@ -105,7 +102,7 @@ while cap.isOpened():
                 frame_counter = 0
                 
             cv2.putText(frame, f"Blinks: {blink_counter}", (30, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
-
+            
     cv2.putText(frame, status_text, (30, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
     cv2.imshow('AI Ergonomist (Dev Mode)', frame)
     
