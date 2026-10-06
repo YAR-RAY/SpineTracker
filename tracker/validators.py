@@ -21,7 +21,7 @@ def check_posture(pose_result, base_shoulder_dist, base_neck_dist, config):
     """
     Проверяет осанку пользователя, используя среднее положение двух ушей.
     """
-    points_list = pose_result.pose_landmarks
+    points_list = pose_result.pose_landmarks[0]
     
     # Извлекаем точки по индексам из конфигуратора
     left_ear = points_list[config.LEFT_EAR_IDX]

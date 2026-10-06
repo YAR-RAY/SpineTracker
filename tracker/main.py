@@ -1,13 +1,22 @@
+import os
+import sys
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 import cv2
 import mediapipe as mp
-import os
 import urllib.request
+import threading
+import time
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
 import config
 import validators
-
+from ui_notification.background_worker import NotificationManager
+from ui_notification.background_worker import qt_app
 # --- ЗАГРУЗКА МОДЕЛЕЙ ---
 for name, url, path in [("Лицо", config.FACE_MODEL_URL, config.FACE_MODEL_PATH), 
                         ("Поза", config.POSE_MODEL_URL, config.POSE_MODEL_PATH)]:
@@ -29,6 +38,8 @@ base_pose = python.BaseOptions(model_asset_path=config.POSE_MODEL_PATH)
 pose_options = vision.PoseLandmarkerOptions(base_options=base_pose, num_poses=1)
 pose_detector = vision.PoseLandmarker.create_from_options(pose_options)
 
+ui_manager = NotificationManager()
+
 # --- ПЕРЕМЕННЫЕ СОСТОЯНИЯ ---
 blink_counter = 0
 frame_counter = 0
@@ -39,12 +50,16 @@ calibration_frames = 0
 calibration_shoulders = []
 calibration_necks = []
 
+start_minute_timer = time.time()
+
 cap = cv2.VideoCapture(0)
 print("\n Сядьте ровно...")
 
 while cap.isOpened():
     success, frame = cap.read()
     if not success: break
+
+    qt_app.processEvents()
     
     frame = cv2.resize(frame, (640, 480))
     h_img, w_img, _ = frame.shape
@@ -81,9 +96,11 @@ while cap.isOpened():
             if is_leaning:
                 status_text = "Too close to monitor!"
                 color = (0, 0, 255)
+                ui_manager.trigger_warning("monitor") 
             elif is_slouching:
                 status_text = "Don't slouch!"
                 color = (0, 165, 255)
+                ui_manager.trigger_warning("slouch") 
 
     if face_result and face_result.face_landmarks and len(face_result.face_landmarks) > 0:
         actual_face_landmarks = face_result.face_landmarks[0]
@@ -96,13 +113,22 @@ while cap.isOpened():
             cv2.putText(frame, f"EAR: {avg_ear:.3f}", (30, 160), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
             if avg_ear < config.EAR_THRESHOLD:
                 frame_counter += 1
+                if frame_counter >= 40:
+                    ui_manager.trigger_warning("eyes_closed")
             else:
                 if frame_counter >= config.BLINK_FRAME_CONSECUTIVE:
                     blink_counter += 1
                 frame_counter = 0
                 
             cv2.putText(frame, f"Blinks: {blink_counter}", (30, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
-            
+    current_time = time.time()
+    if current_time - start_minute_timer >= 60:
+        if blink_counter < 8:
+            ui_manager.trigger_warning('eyes_dry')
+        elif blink_counter >= 30:
+            ui_manager.trigger_warning("eyes_frequent")
+        blink_counter = 0
+        start_minute_timer = current_time
     cv2.putText(frame, status_text, (30, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
     cv2.imshow('AI Ergonomist (Dev Mode)', frame)
     
