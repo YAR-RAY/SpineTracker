@@ -8,7 +8,7 @@ if BASE_DIR not in sys.path:
 import cv2
 import mediapipe as mp
 import urllib.request
-import threading
+#import threading
 import time
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
@@ -17,7 +17,7 @@ import config
 import validators
 from ui_notification.background_worker import NotificationManager
 from ui_notification.background_worker import qt_app
-# --- ЗАГРУЗКА МОДЕЛЕЙ ---
+
 for name, url, path in [("Лицо", config.FACE_MODEL_URL, config.FACE_MODEL_PATH), 
                         ("Поза", config.POSE_MODEL_URL, config.POSE_MODEL_PATH)]:
     if not os.path.exists(path):
@@ -29,7 +29,7 @@ for name, url, path in [("Лицо", config.FACE_MODEL_URL, config.FACE_MODEL_PA
         except Exception:
             exit()
 
-# --- ИНИЦИАЛИЗАЦИЯ ДЕТЕКТОРОВ ---
+
 base_face = python.BaseOptions(model_asset_path=config.FACE_MODEL_PATH)
 face_options = vision.FaceLandmarkerOptions(base_options=base_face, num_faces=1)
 face_detector = vision.FaceLandmarker.create_from_options(face_options)
@@ -40,7 +40,7 @@ pose_detector = vision.PoseLandmarker.create_from_options(pose_options)
 
 ui_manager = NotificationManager()
 
-# --- ПЕРЕМЕННЫЕ СОСТОЯНИЯ ---
+
 blink_counter = 0
 frame_counter = 0
 base_shoulder_distance = None

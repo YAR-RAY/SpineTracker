@@ -1,22 +1,20 @@
 import sys
 from PyQt6.QtWidgets import QApplication
 from ui_notification.overlay import NotificationOverlay
-
+from ui_notification.chat_window import ChatWindow
 qt_app = QApplication.instance() or QApplication(sys.argv)
 
 class NotificationManager:
     def __init__(self):
         self.active_notification = None
+        self.active_chat = None 
+        self.last_warning_type = "general" 
 
     def trigger_warning(self, warning_type):
-        """
-        Универсальный триггер для ИИ. 
-        """
-        # Если карточка уже на экране — не спамим
         if self.active_notification and self.active_notification.isVisible():
             return
-            
-        # Формируем текст в зависимости от сигнала ИИ-движка
+        if self.active_chat and self.active_chat.isVisible():
+            return
         if warning_type == "monitor":
             title = "Слишком близко к монитору!"
             message = "Вы сильно наклонились вперед. Это создает опасное напряжение для глаз. Нажмите для консультации с ИИ."
@@ -33,15 +31,19 @@ class NotificationManager:
             title = "Переутомление глаз! Частое моргание"
             message = "Вы моргаете слишком часто. Это признак сильного утомления глазных мышц. Нажмите, ИИ подскажет технику расслабления."
         else:
-            return # Если пришел неизвестный тип — ничего не делаем
+            return 
 
-        # Создаем и запускаем PyQt6 оверлей
         self.active_notification = NotificationOverlay(
             title=title,
             message=message,
-            click_callback=self._on_notification_clicked
+            click_callback=lambda: self.open_chat_for_problem(warning_type)
         )
         self.active_notification.show_animated()
+    def open_chat_for_problem(self, problem_type):
+        print(f"Открываем ИИ-чат для проблемы: {problem_type}")
+        self.active_chat = ChatWindow(problem_type=problem_type)
+        self.active_chat.show()
 
     def _on_notification_clicked(self):
-        print("Клик зафиксирован! Закрываем карточку и открываем окно ИИ-Ассистента (Модуль 3)...")
+        self.active_chat = ChatWindow(problem_type=self.last_warning_type)
+        self.active_chat.show()
