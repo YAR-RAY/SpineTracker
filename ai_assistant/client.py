@@ -11,6 +11,7 @@ if CURRENT_DIR not in sys.path:
 from openai import OpenAI
 from dotenv import load_dotenv
 from ui_notification.relax_window import open_relax_window
+from PyQt6.QtCore import QObject, pyqtSignal
 import json
 
 load_dotenv()
@@ -25,9 +26,14 @@ client = OpenAI(
     
 model = f"gpt://{FOLDER_ID}/yandexgpt/rc"
 
+class RelaxSignalBridge(QObject):
+    need_relax_trigger = pyqtSignal()
+
+relax_bridge = RelaxSignalBridge()
+
 def call_relax_session():
     print('функция вызвана')
-    open_relax_window()
+    relax_bridge.need_relax_trigger.emit()
     return {"status": "success", "message": "Окно разминки успешно открыто на экране пользователя."}
 my_functions = {
     "call_relax_session": call_relax_session
@@ -95,50 +101,20 @@ tools = [
         }
     }
 ]
-
 instructions = """
 Ты — профессиональный врач-эргономист. К тебе обращается пользователь за помощью.
-Твоя задача:
-1. Давать лаконичные и практичные рекомендации по улучшению осанки и защите зрения.
-2. Отвечать на вопросы пользователя дружелюбно и коротко (не более 3 предложений).
-3. ЕСЛИ пользователь просит сделать тренировку, разминку или упражнение для глаз, ты ОБЯЗАН вызвать функцию call_relax_session ").
 
-Пиши кратко и по делу.
+Твоя задача:
+1. Давать лаконичные рекомендации по улучшению осанки и защите зрения (не более 3 предложений).
+2. Если пользователь жалуется на глаза или усталость, ты должен сначала вежливо ПРЕДЛОЖИТЬ ему провести разминку текстом (например: «Давай проведем разминку для глаз?»). В этот момент функцию call_relax_session вызывать НЕ НУЖНО.
+3. ЕСЛИ пользователь явно соглашается на твое предложение («Давай», «Запускай», «Хочу», «Да»), вот тогда ты ОБЯЗАН вызвать функцию call_relax_session через инструменты tools. В самом текстовом ответе при этом не должно быть никаких JSON-структур или технических скобок.
+
+Пиши кратко и по делу на русском языке.
 """
 
 
 health_care_assistant = Assistant(instructions = instructions, tools=tools, function_map=my_functions)
-#print(health_care_assistant("давай разминку для глаз"))
+print(health_care_assistant("Спина болит"))
 
 
 
-
-'''
-def __init__(self, model=model, instructions=None, tools=None, function_map=None):
-        self.model = model
-        self.instructions = instructions
-        self.tools = tools or []
-        self.function_map = function_map
-
-    def __call__(self, input_text, session_id='default'):
-        try:
-            response = client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "user", "content": f"{self.instructions}\n\nПользователь спрашивает: {input_text}"}
-                ],
-                temperature=0.6
-            )
-            
-            if response.choices and len(response.choices) > 0:
-                return response.choices[0].message.content
-                
-            return "Сервер вернул пустой ответ."
-            
-        except Exception as e:
-            return f"Ошибка подключения к YandexGPT: {e}"
-и ОДНОВРЕМЕННО написать пользователю в чат вежливое подтверждение (например: "Конечно, я запускаю окно разминки. Отвлекитесь от экрана на 20 секунд!
-, но всегда возвращай текстовый ответ, чтобы пользователь видел твои реплики в чате
-            
-            
-            '''
