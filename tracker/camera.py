@@ -14,8 +14,8 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import mediapipe as mp
 
-import config
-import validators
+import tracker.config as config
+import tracker.validators as validators
 from ui_notification.background_worker import NotificationManager
 from ui_notification.background_worker import qt_app
 
@@ -137,13 +137,3 @@ class TrackWorker(QThread):
 
         cap.release()
         cv2.destroyAllWindows()
-
-if __name__ == "__main__":
-    ui_manager = NotificationManager()
-    
-    ai_thread = TrackWorker()
-    
-    ai_thread.trigger_warning_signal.connect(ui_manager.trigger_warning)
-    ai_thread.start()
-    
-    sys.exit(qt_app.exec())
