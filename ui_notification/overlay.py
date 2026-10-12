@@ -1,7 +1,5 @@
-import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QFrame
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QPoint
-from PyQt6.QtGui import QScreen
 
 import ui_notification.configs.config_ui_notification as ui_config
 
@@ -76,20 +74,17 @@ class NotificationOverlay(QWidget):
         self.anim.setStartValue(QPoint(self.end_x, self.start_y)) 
         self.anim.setEndValue(QPoint(self.end_x, self.end_y))     
         
-        # Создаем таймер автоскрытия. Когда карточка постоит на экране, она должна исчезнуть
         self.hide_timer = QTimer()
-        self.hide_timer.setSingleShot(True) # Таймер должен сработать строго 1 раз
-        self.hide_timer.timeout.connect(self.close) # По истечении времени вызываем системное закрытие окна
+        self.hide_timer.setSingleShot(True)
+        self.hide_timer.timeout.connect(self.close)
 
     def show_animated(self):
-        """Функция для запуска показа карточки с анимацией"""
-        self.show() # Показываем окно в системе
-        self.anim.start() # Включаем анимацию выезда вверх
-        self.hide_timer.start(ui_config.DISPLAY_TIME) # Запускаем отсчет 7 секунд до автоскрытия
+        self.show() 
+        self.anim.start() 
+        self.hide_timer.start(ui_config.DISPLAY_TIME) 
 
     def mousePressEvent(self, event):
-        """Встроенная функция PyQt, которая отслеживает клик мыши по окну"""
-        if event.button() == Qt.MouseButton.LeftButton: # Если пользователь кликнул левой кнопкой мыши
-            self.close() # Немедленно закрываем карточку предупреждения
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.close() 
             if self.click_callback:
-                self.click_callback() # Если мы передали функцию открытия ИИ-ассистента — запускаем её!
+                self.click_callback()
