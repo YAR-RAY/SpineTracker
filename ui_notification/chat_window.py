@@ -1,14 +1,10 @@
-import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QTextEdit, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QLabel
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
-
 import ui_notification.configs.config_ai_assistant as chat_config
 from ai_assistant.client import health_care_assistant, relax_bridge
 from ui_notification.relax_window import open_relax_window
 
-# --- КЛАСС ФОНОВОГО ПОТОКА СЕТИ (ЯНДЕКС СЕТЬ) ---
 class NetworkWorker(QThread):
-    # Сигнал для передачи готового текста ответа ИИ в главный графический поток
     response_received = pyqtSignal(str)
 
     def __init__(self, text, session_id):
@@ -17,7 +13,6 @@ class NetworkWorker(QThread):
         self.session_id = session_id
 
     def run(self):
-        """Этот метод засыпает на 2 секунды в сети Яндекса, вообще не загружая UI-поток!"""
         try:
             ai_response = health_care_assistant(self.text, session_id=self.session_id)
             self.response_received.emit(ai_response)
@@ -82,9 +77,7 @@ class ChatWindow(QWidget):
         
         self.setLayout(main_layout)
         
-        # Переменная долгожительства сетевого потока
-        self.net_thread = None
-        relax_bridge.need_relax_trigger.connect(open_relax_window)
+        relax_bridge.relax_trigger.connect(open_relax_window)
         self.generate_initial_greeting()
 
     def generate_initial_greeting(self):
@@ -120,16 +113,12 @@ class ChatWindow(QWidget):
         else:
             full_prompt = user_text
 
-        # ЗАПУСКАЕМ СЕТЕВОЙ ПОТОК ЯНДЕКСА
         self.net_thread = NetworkWorker(full_prompt, self.current_session_id)
-        self.net_thread.setParent(self) # Жесткая привязка к ОЗУ окна, защищающая от Garbage Collector
-        
-        # Перехватываем сигнал возврата ответа и коннектим к методу display_response
+        self.net_thread.setParent(self) 
         self.net_thread.response_received.connect(self.display_response)
         self.net_thread.start()
 
     def display_response(self, ai_response):
-        """Метод вызывается строго в Главном UI-потоке, выводя готовый текст на экран"""
         cursor = self.history_area.textCursor()
         cursor.movePosition(cursor.MoveOperation.End)
         cursor.select(cursor.SelectionType.LineUnderCursor)

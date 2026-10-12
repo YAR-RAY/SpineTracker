@@ -1,23 +1,14 @@
 import os
-import sys
 import cv2
 import time
 import urllib.request
 from PyQt6.QtCore import QThread, pyqtSignal
-from PyQt6.QtWidgets import QApplication
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if BASE_DIR not in sys.path:
-    sys.path.insert(0, BASE_DIR)
-
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import mediapipe as mp
 
 import tracker.config as config
 import tracker.validators as validators
-from ui_notification.background_worker import NotificationManager
-from ui_notification.background_worker import qt_app
 
 for name, url, path in [("Лицо", config.FACE_MODEL_URL, config.FACE_MODEL_PATH), 
                         ("Поза", config.POSE_MODEL_URL, config.POSE_MODEL_PATH)]:
@@ -34,7 +25,6 @@ class TrackWorker(QThread):
     trigger_warning_signal = pyqtSignal(str)
 
     def run(self):
-        """Вся тяжелая математика MediaPipe и OpenCV выполняется здесь параллельно чату!"""
         base_face = python.BaseOptions(model_asset_path=config.FACE_MODEL_PATH)
         face_options = vision.FaceLandmarkerOptions(base_options=base_face, num_faces=1)
         face_detector = vision.FaceLandmarker.create_from_options(face_options)
@@ -53,7 +43,6 @@ class TrackWorker(QThread):
         start_minute_timer = time.time()
 
         cap = cv2.VideoCapture(0)
-        print("\n Фоновый поток ИИ запущен. Сядьте ровно...")
 
         while cap.isOpened() and not self.isInterruptionRequested():
             success, frame = cap.read()
@@ -71,7 +60,6 @@ class TrackWorker(QThread):
             status_text = "Status: Searching for user..."
             color = (128, 128, 128)
             
-            # --- ЛОГИКА ОСАНКИ ---
             if pose_result and pose_result.pose_landmarks and len(pose_result.pose_landmarks) > 0:
                 if base_shoulder_distance is None:
                     _, _, cur_sh, cur_nk = validators.check_posture(pose_result, None, None, config)
@@ -84,7 +72,6 @@ class TrackWorker(QThread):
                     if calibration_frames >= 30:
                         base_shoulder_distance = sum(calibration_shoulders) / len(calibration_shoulders)
                         base_neck_distance = sum(calibration_necks) / len(calibration_necks)
-                        print(f"Калибровка завершена!")
                 else:
                     status_text = "Status: OK"
                     color = (0, 255, 0)

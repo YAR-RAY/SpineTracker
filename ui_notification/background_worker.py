@@ -40,7 +40,6 @@ class NotificationManager:
         )
         self.active_notification.show_animated()
     def open_chat_for_problem(self, problem_type):
-        print(f"Открываем ИИ-чат для проблемы: {problem_type}")
         self.active_chat = ChatWindow(problem_type=problem_type)
         self.active_chat.show()
 

@@ -1,5 +1,5 @@
 DOT_SIZE = 24              
-DOT_COLOR ="#33A1FF"      
+DOT_COLOR = "#33A1FF"      
 DOT_SPEED = 5          
 
 TRAJECTORY_MODE = ["vertical", "horizontal", "infinity", "circle"]

@@ -1,16 +1,6 @@
 import os
-import sys
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if BASE_DIR not in sys.path:
-    sys.path.insert(0, BASE_DIR)
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-if CURRENT_DIR not in sys.path:
-    sys.path.insert(0, CURRENT_DIR)
-
 from openai import OpenAI
 from dotenv import load_dotenv
-from ui_notification.relax_window import open_relax_window
 from PyQt6.QtCore import QObject, pyqtSignal
 import json
 
@@ -26,15 +16,15 @@ client = OpenAI(
     
 model = f"gpt://{FOLDER_ID}/yandexgpt/rc"
 
-class RelaxSignalBridge(QObject):
-    need_relax_trigger = pyqtSignal()
+class RelaxSession(QObject):
+    relax_trigger = pyqtSignal()
 
-relax_bridge = RelaxSignalBridge()
+relax_bridge = RelaxSession()
 
 def call_relax_session():
-    print('функция вызвана')
-    relax_bridge.need_relax_trigger.emit()
+    relax_bridge.relax_trigger.emit()
     return {"status": "success", "message": "Окно разминки успешно открыто на экране пользователя."}
+
 my_functions = {
     "call_relax_session": call_relax_session
 }
@@ -66,12 +56,8 @@ class Assistant:
                 
                 function_args = json.loads(arguments_str)
                 
-                print(f"[DEBUG] Вызов функции: {function_name}({function_args})")
-                
                 if function_name in self.function_map:
                     function_result = self.function_map[function_name](**function_args)
-                    
-                    print(f"[DEBUG] Результат функции: {function_result}")
                     
                     result_message = f"Результат выполнения функции {function_name}: {json.dumps(function_result, ensure_ascii=False)}"
                     
@@ -111,10 +97,8 @@ instructions = """
 
 Пиши кратко и по делу на русском языке.
 """
-
-
 health_care_assistant = Assistant(instructions = instructions, tools=tools, function_map=my_functions)
-print(health_care_assistant("Спина болит"))
+
 
 
 
