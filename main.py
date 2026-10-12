@@ -7,6 +7,7 @@ from PyQt6.QtGui import QIcon, QAction
 
 if __name__ == "__main__":
     ui_manager = NotificationManager()
+    qt_app.setQuitOnLastWindowClosed(False)
     tray_menu = QMenu()
     exit_action = QAction("Выход из ИИ-Эргономиста", tray_menu)
     exit_action.triggered.connect(qt_app.quit)
