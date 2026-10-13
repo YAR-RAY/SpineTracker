@@ -4,10 +4,13 @@ from tracker.camera import TrackWorker
 import sys
 from PyQt6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
 from PyQt6.QtGui import QIcon, QAction
+from ui_notification.welcome_window import WelcomeWindow
 
 if __name__ == "__main__":
     ui_manager = NotificationManager()
     qt_app.setQuitOnLastWindowClosed(False)
+    welcome = WelcomeWindow()
+    welcome.show()
     tray_menu = QMenu()
     exit_action = QAction("Выход из ИИ-Эргономиста", tray_menu)
     exit_action.triggered.connect(qt_app.quit)

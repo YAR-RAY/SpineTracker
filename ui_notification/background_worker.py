@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QApplication
-from ui_notification.overlay import NotificationOverlay
+from ui_notification.notification import NotificationOverlay
 from ui_notification.chat_window import ChatWindow
 qt_app = QApplication.instance() or QApplication(sys.argv)
 
