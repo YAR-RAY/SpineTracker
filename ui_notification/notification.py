@@ -1,24 +1,29 @@
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QFrame
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QPoint
 
-import ui_notification.configs.config_ui_notification as ui_config
+NOTIFICATION_WIDTH = 340   
+NOTIFICATION_HEIGHT = 110 
+ANIMATION_DURATION = 300   
+DISPLAY_TIME = 6000
 
 class NotificationOverlay(QWidget):
     def __init__(self, title, message, click_callback=None):
         super().__init__()
         self.click_callback = click_callback 
         
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | 
-                            Qt.WindowType.WindowStaysOnTopHint | 
-                            Qt.WindowType.Tool)
+        self.setWindowFlags(
+            Qt.WindowType.Window | 
+            Qt.WindowType.WindowStaysOnTopHint | 
+            Qt.WindowType.CustomizeWindowHint | 
+            Qt.WindowType.WindowCloseButtonHint
+        )
         
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setFixedSize(ui_config.NOTIFICATION_WIDTH, ui_config.NOTIFICATION_HEIGHT)
+        self.setFixedSize(NOTIFICATION_WIDTH, NOTIFICATION_HEIGHT)
         
         self.main_widget = QWidget(self)
-        self.main_widget.setObjectName("MainWidget")
-        self.main_widget.setStyleSheet(ui_config.STYLE_SHEET)
-        self.main_widget.setFixedSize(ui_config.NOTIFICATION_WIDTH, ui_config.NOTIFICATION_HEIGHT)
+        self.main_widget.setObjectName("NotificationWindow")
+        self.main_widget.setFixedSize(NOTIFICATION_WIDTH, NOTIFICATION_HEIGHT)
         
 
         widget_layout = QVBoxLayout(self.main_widget)
@@ -29,6 +34,7 @@ class NotificationOverlay(QWidget):
 
 
         self.title_label = QLabel(title)
+        self.title_label.setProperty("class", "heading")
         if "близко" in title.lower() or "монитор" in title.lower():
             self.title_label.setObjectName("MonitorTitle") 
         elif "глаз" in title.lower() or "сухость" in title.lower():
@@ -38,18 +44,13 @@ class NotificationOverlay(QWidget):
         else:
             self.title_label.setObjectName("SlouchTitle")  
 
-        self.close_button = QPushButton('x')
-        self.close_button.setObjectName("CloseButton")
-        self.close_button.setFixedSize(24, 24)
-        self.close_button.clicked.connect(self.close)
-
         top_layout.addWidget(self.title_label)
-        top_layout.addWidget(self.close_button, alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop) 
-
+        
         self.separator = QFrame()
         self.separator.setObjectName("Separator")
 
         self.msg_label = QLabel(message)
+        self.msg_label.setProperty("class", "description")
         self.msg_label.setObjectName("Message")
         self.msg_label.setWordWrap(True)
 
@@ -63,14 +64,14 @@ class NotificationOverlay(QWidget):
         screen_geo = screen.geometry()        
         
         
-        self.end_x = screen_geo.width() - ui_config.NOTIFICATION_WIDTH - 20
-        self.end_y = screen_geo.height() - ui_config.NOTIFICATION_HEIGHT - 50
+        self.end_x = screen_geo.width() - NOTIFICATION_WIDTH - 20
+        self.end_y = screen_geo.height() - NOTIFICATION_HEIGHT - 50
         self.start_y = screen_geo.height() + 100
         
         self.move(self.end_x, self.start_y)
         
         self.anim = QPropertyAnimation(self, b"pos")
-        self.anim.setDuration(ui_config.ANIMATION_DURATION) 
+        self.anim.setDuration(ANIMATION_DURATION) 
         self.anim.setStartValue(QPoint(self.end_x, self.start_y)) 
         self.anim.setEndValue(QPoint(self.end_x, self.end_y))     
         
@@ -81,7 +82,7 @@ class NotificationOverlay(QWidget):
     def show_animated(self):
         self.show() 
         self.anim.start() 
-        self.hide_timer.start(ui_config.DISPLAY_TIME) 
+        self.hide_timer.start(DISPLAY_TIME) 
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:

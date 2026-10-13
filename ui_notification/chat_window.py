@@ -1,8 +1,10 @@
 from PyQt6.QtWidgets import QApplication, QWidget, QTextEdit, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QLabel
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
-import ui_notification.configs.config_ai_assistant as chat_config
 from ai_assistant.client import health_care_assistant, relax_bridge
 from ui_notification.relax_window import open_relax_window
+
+CHAT_WIDTH = 420
+CHAT_HEIGHT = 550
 
 class NetworkWorker(QThread):
     response_received = pyqtSignal(str)
@@ -18,8 +20,6 @@ class NetworkWorker(QThread):
             self.response_received.emit(ai_response)
         except Exception as e:
             self.response_received.emit(f"Ошибка фонового соединения с YandexGPT: {e}")
-
-
 class ChatWindow(QWidget):
     chat_counter = 0
     def __init__(self, problem_type="общая усталость"):
@@ -33,24 +33,23 @@ class ChatWindow(QWidget):
 
         self.setObjectName("ChatWindow")
         self.setWindowTitle("ИИ-Эргономист")
-        self.setStyleSheet(chat_config.CHAT_STYLE_SHEET)
-        self.setFixedSize(chat_config.CHAT_WIDTH, chat_config.CHAT_HEIGHT)
+        self.setFixedSize(CHAT_WIDTH, CHAT_HEIGHT)
 
         screen = QApplication.primaryScreen()
         screen_geo = screen.geometry()
         
-        chat_x = screen_geo.width() - chat_config.CHAT_WIDTH - 20
-        chat_y = screen_geo.height() - chat_config.CHAT_HEIGHT - 50 
+        chat_x = screen_geo.width() - CHAT_WIDTH - 20
+        chat_y = screen_geo.height() - CHAT_HEIGHT - 50 
         self.move(chat_x, chat_y)
         
-        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint)
+        self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.WindowStaysOnTopHint)
         
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(15, 15, 15, 15)
         main_layout.setSpacing(10)
         
         self.header_label = QLabel("Ваш персональный ИИ-Эргономист")
-        self.header_label.setStyleSheet("font-size: 15px; font-weight: bold; color: #0E639C;")
+        self.header_label.setObjectName("HeaderLabel")
         main_layout.addWidget(self.header_label)
         
         self.history_area = QTextEdit()

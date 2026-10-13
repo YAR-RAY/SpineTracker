@@ -1,27 +1,21 @@
 from ui_notification.background_worker import NotificationManager
 from ui_notification.background_worker import qt_app
 from tracker.camera import TrackWorker
+from ui_notification.tray_icon import TrayIcon
+import ui_notification.configs.config_theme as config_theme
 import sys
-from PyQt6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
-from PyQt6.QtGui import QIcon, QAction
+
 from ui_notification.welcome_window import WelcomeWindow
 
 if __name__ == "__main__":
     ui_manager = NotificationManager()
     qt_app.setQuitOnLastWindowClosed(False)
+    initial_theme = config_theme.load_user_theme()
+    start_style = config_theme.DARK_THEME_STYLE if initial_theme == "dark" else config_theme.LIGHT_THEME_STYLE
+    qt_app.setStyleSheet(start_style)
     welcome = WelcomeWindow()
     welcome.show()
-    tray_menu = QMenu()
-    exit_action = QAction("Выход из ИИ-Эргономиста", tray_menu)
-    exit_action.triggered.connect(qt_app.quit)
-    tray_menu.addAction(exit_action)
-    tray_icon = QSystemTrayIcon(qt_app)
-    current_style = QApplication.style()
-    standard_icon = current_style.standardIcon(current_style.StandardPixmap.SP_ComputerIcon)
-    tray_icon.setIcon(standard_icon)
-    tray_icon.setContextMenu(tray_menu)
-    tray_icon.setToolTip("ИИ-Эргономист: Мониторинг осанки активен")
-    tray_icon.show()
+    tray_icon = TrayIcon(qt_app)
 
 
     ai_thread = TrackWorker()
