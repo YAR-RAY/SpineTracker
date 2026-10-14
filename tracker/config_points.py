@@ -5,6 +5,8 @@ TRACKER_DIR = os.path.dirname(os.path.abspath(__file__))
 FACE_MODEL_PATH = os.path.join(TRACKER_DIR, "face_landmarker.task")
 POSE_MODEL_PATH = os.path.join(TRACKER_DIR, "pose_landmarker.task")
 
+FACE_INTERVAL = 0.05 
+POSE_INTERVAL = 0.5
 
 EAR_THRESHOLD = 0.22              
 BLINK_FRAME_CONSECUTIVE = 2       

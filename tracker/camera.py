@@ -27,14 +27,24 @@ class TrackWorker(QThread):
         calibration_frames = 0
         calibration_shoulders = []
         calibration_necks = []
+
         start_minute_timer = time.time()
+        last_face_time = 0.0
+        last_pose_time = 0.0
 
         cap = cv2.VideoCapture(0)
 
         while cap.isOpened() and not self.isInterruptionRequested():
             success, frame = cap.read()
-            if not success: break
-            
+            if not success: 
+                break
+            current_time = time.time()
+
+            if current_time - last_face_time < config_p.FACE_INTERVAL:
+                time.sleep(0.01)
+                continue
+            last_face_time = current_time
+
             frame = cv2.resize(frame, (640, 480))
             h_img, w_img, _ = frame.shape
             
@@ -43,34 +53,29 @@ class TrackWorker(QThread):
             
             face_result = face_detector.detect(mp_image)
             pose_result = pose_detector.detect(mp_image)
-            
-            status_text = "Status: Searching for user..."
-            color = (128, 128, 128)
-            
+
+            if current_time - last_pose_time >= config_p.POSE_INTERVAL:
+                pose_result = pose_detector.detect(mp_image)
+                last_pose_time = current_time
+            else:
+                pose_result = None
+
             if pose_result and pose_result.pose_landmarks and len(pose_result.pose_landmarks) > 0:
                 if base_shoulder_distance is None:
                     _, _, cur_sh, cur_nk = validators.check_posture(pose_result, None, None, config_p)
                     calibration_shoulders.append(cur_sh)
                     calibration_necks.append(cur_nk)
                     calibration_frames += 1
-                    status_text = f"Calibrating... {int((calibration_frames/30)*100)}%"
-                    color = (0, 255, 255)
                     
                     if calibration_frames >= 30:
                         base_shoulder_distance = sum(calibration_shoulders) / len(calibration_shoulders)
                         base_neck_distance = sum(calibration_necks) / len(calibration_necks)
                 else:
-                    status_text = "Status: OK"
-                    color = (0, 255, 0)
                     
                     is_leaning, is_slouching, _, _ = validators.check_posture(pose_result, base_shoulder_distance, base_neck_distance, config_p)
                     if is_leaning:
-                        status_text = "Too close to monitor!"
-                        color = (0, 0, 255)
                         self.trigger_warning_signal.emit("monitor") 
                     elif is_slouching:
-                        status_text = "Don't slouch!"
-                        color = (0, 165, 255)
                         self.trigger_warning_signal.emit("slouch") 
 
             
@@ -82,7 +87,6 @@ class TrackWorker(QThread):
                     left_ear_val = validators.calculate_ear(landmarks, config_p.LEFT_EYE)
                     right_ear_val = validators.calculate_ear(landmarks, config_p.RIGHT_EYE)
                     avg_ear = (left_ear_val + right_ear_val) / 2.0
-                    cv2.putText(frame, f"EAR: {avg_ear:.3f}", (30, 160), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
                     if avg_ear < config_p.EAR_THRESHOLD:
                         frame_counter += 1
                         if frame_counter >= 40:
@@ -91,10 +95,7 @@ class TrackWorker(QThread):
                         if frame_counter >= config_p.BLINK_FRAME_CONSECUTIVE:
                             blink_counter += 1
                         frame_counter = 0
-                        
-                    cv2.putText(frame, f"Blinks: {blink_counter}", (30, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
             
-            current_time = time.time()
             if current_time - start_minute_timer >= 60:
                 if blink_counter < 8:
                     self.trigger_warning_signal.emit('eyes_dry')
@@ -102,12 +103,5 @@ class TrackWorker(QThread):
                     self.trigger_warning_signal.emit("eyes_frequent")
                 blink_counter = 0
                 start_minute_timer = current_time
-                
-            cv2.putText(frame, status_text, (30, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
-            cv2.imshow('AI Ergonomist (Dev Mode)', frame)
-            
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
 
         cap.release()
-        cv2.destroyAllWindows()
