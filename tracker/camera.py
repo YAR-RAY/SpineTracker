@@ -1,3 +1,5 @@
+import sys
+import os
 import cv2
 import time
 from PyQt6.QtCore import QThread, pyqtSignal
@@ -12,6 +14,10 @@ class TrackWorker(QThread):
     trigger_warning_signal = pyqtSignal(str)
 
     def run(self):
+        if hasattr(sys, '_MEIPASS'):
+            config_p.FACE_MODEL_PATH = os.path.join(sys._MEIPASS, "tracker", "face_landmarker.task")
+            config_p.POSE_MODEL_PATH = os.path.join(sys._MEIPASS, "tracker", "pose_landmarker.task")
+
         base_face = python.BaseOptions(model_asset_path=config_p.FACE_MODEL_PATH)
         face_options = vision.FaceLandmarkerOptions(base_options=base_face, num_faces=1)
         face_detector = vision.FaceLandmarker.create_from_options(face_options)

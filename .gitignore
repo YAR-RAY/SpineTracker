@@ -1,2 +1,6 @@
-venv/
+packaging_env/
+build/
+dist/
+*.spec
+user_settings.json
 .env
