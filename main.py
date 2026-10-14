@@ -1,11 +1,12 @@
-from ui_notification.background_worker import NotificationManager
-from ui_notification.background_worker import qt_app
-from tracker.camera import TrackWorker
-from ui_notification.tray_icon import TrayIcon
-import ui_notification.configs.config_theme as config_theme
 import sys
 
+from ui_notification.background_worker import qt_app
+from ui_notification.background_worker import NotificationManager
+from tracker.camera import TrackWorker
+from ui_notification.tray_icon import TrayIcon
 from ui_notification.welcome_window import WelcomeWindow
+import ui_notification.configs.config_theme as config_theme
+
 
 if __name__ == "__main__":
     ui_manager = NotificationManager()
@@ -23,5 +24,5 @@ if __name__ == "__main__":
     ai_thread.start()
     status_code = qt_app.exec()
     ai_thread.requestInterruption()
-    ai_thread.wait() 
+    ai_thread.wait()
     sys.exit(status_code)

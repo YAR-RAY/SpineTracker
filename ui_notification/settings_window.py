@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QApplication
 from PyQt6.QtCore import Qt
+
 import ui_notification.configs.config_theme as config_theme
 
 SETTINGS_WINDOW_TITLE = "ИИ-Эргономист: Настройки"

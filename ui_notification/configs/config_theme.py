@@ -1,7 +1,6 @@
 import os
 import json
 
-# Путь к файлу конфигурации настроек пользователя в корне проекта
 SETTINGS_FILE = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 
     "user_settings.json"

@@ -5,18 +5,18 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import mediapipe as mp
 
-import tracker.config_points as p_config
+import tracker.config_points as config_p
 import tracker.validators as validators
 
 class TrackWorker(QThread):
     trigger_warning_signal = pyqtSignal(str)
 
     def run(self):
-        base_face = python.BaseOptions(model_asset_path=p_config.FACE_MODEL_PATH)
+        base_face = python.BaseOptions(model_asset_path=config_p.FACE_MODEL_PATH)
         face_options = vision.FaceLandmarkerOptions(base_options=base_face, num_faces=1)
         face_detector = vision.FaceLandmarker.create_from_options(face_options)
 
-        base_pose = python.BaseOptions(model_asset_path=p_config.POSE_MODEL_PATH)
+        base_pose = python.BaseOptions(model_asset_path=config_p.POSE_MODEL_PATH)
         pose_options = vision.PoseLandmarkerOptions(base_options=base_pose, num_poses=1)
         pose_detector = vision.PoseLandmarker.create_from_options(pose_options)
 
@@ -49,7 +49,7 @@ class TrackWorker(QThread):
             
             if pose_result and pose_result.pose_landmarks and len(pose_result.pose_landmarks) > 0:
                 if base_shoulder_distance is None:
-                    _, _, cur_sh, cur_nk = validators.check_posture(pose_result, None, None, p_config)
+                    _, _, cur_sh, cur_nk = validators.check_posture(pose_result, None, None, config_p)
                     calibration_shoulders.append(cur_sh)
                     calibration_necks.append(cur_nk)
                     calibration_frames += 1
@@ -63,7 +63,7 @@ class TrackWorker(QThread):
                     status_text = "Status: OK"
                     color = (0, 255, 0)
                     
-                    is_leaning, is_slouching, _, _ = validators.check_posture(pose_result, base_shoulder_distance, base_neck_distance, p_config)
+                    is_leaning, is_slouching, _, _ = validators.check_posture(pose_result, base_shoulder_distance, base_neck_distance, config_p)
                     if is_leaning:
                         status_text = "Too close to monitor!"
                         color = (0, 0, 255)
@@ -79,16 +79,16 @@ class TrackWorker(QThread):
                 landmarks = [(int(lm.x * w_img), int(lm.y * h_img)) for lm in actual_face_landmarks]
                 
                 if len(landmarks) >= 400:
-                    left_ear_val = validators.calculate_ear(landmarks, p_config.LEFT_EYE)
-                    right_ear_val = validators.calculate_ear(landmarks, p_config.RIGHT_EYE)
+                    left_ear_val = validators.calculate_ear(landmarks, config_p.LEFT_EYE)
+                    right_ear_val = validators.calculate_ear(landmarks, config_p.RIGHT_EYE)
                     avg_ear = (left_ear_val + right_ear_val) / 2.0
                     cv2.putText(frame, f"EAR: {avg_ear:.3f}", (30, 160), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
-                    if avg_ear < p_config.EAR_THRESHOLD:
+                    if avg_ear < config_p.EAR_THRESHOLD:
                         frame_counter += 1
                         if frame_counter >= 40:
                             self.trigger_warning_signal.emit("eyes_closed")
                     else:
-                        if frame_counter >= p_config.BLINK_FRAME_CONSECUTIVE:
+                        if frame_counter >= config_p.BLINK_FRAME_CONSECUTIVE:
                             blink_counter += 1
                         frame_counter = 0
                         

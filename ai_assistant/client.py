@@ -1,8 +1,8 @@
 import os
+import json
 from openai import OpenAI
 from dotenv import load_dotenv
 from PyQt6.QtCore import QObject, pyqtSignal
-import json
 
 load_dotenv()
 API_KEY = os.environ["API_KEY"]

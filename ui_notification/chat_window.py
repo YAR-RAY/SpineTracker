@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QApplication, QWidget, QTextEdit, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QLabel
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
+
 from ai_assistant.client import health_care_assistant, relax_bridge
 from ui_notification.relax_window import open_relax_window
 
