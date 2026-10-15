@@ -3,6 +3,7 @@ from PyQt6.QtCore import Qt, QThread, pyqtSignal
 
 from ai_assistant.client import health_care_assistant, relax_bridge
 from ui_notification.relax_window import open_relax_window
+import ui_notification.configs.config_theme as config_theme
 
 CHAT_WIDTH = 420
 CHAT_HEIGHT = 550
@@ -78,6 +79,10 @@ class ChatWindow(QWidget):
         self.setLayout(main_layout)
         
         relax_bridge.relax_trigger.connect(open_relax_window)
+        current_theme = config_theme.load_user_theme()
+        
+        style = config_theme.DARK_THEME_STYLE if current_theme == "dark" else config_theme.LIGHT_THEME_STYLE
+        self.setStyleSheet(style)
         self.generate_initial_greeting()
 
     def generate_initial_greeting(self):

@@ -41,7 +41,7 @@ def check_posture(pose_result, base_shoulder_dist, base_neck_dist, config):
     
     is_slouching = False
     if base_neck_dist:
-        if current_neck_dist < base_neck_dist * 0.85:
+        if current_neck_dist < base_neck_dist * config.NECK_DIST_LIMIT_RATIO:
             is_slouching = True
             
     return is_leaning, is_slouching, current_shoulder_dist, current_neck_dist

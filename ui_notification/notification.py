@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QFrame
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QPoint
-
+import ui_notification.configs.config_theme as config_theme
 NOTIFICATION_WIDTH = 340   
 NOTIFICATION_HEIGHT = 110 
 ANIMATION_DURATION = 300   
@@ -78,7 +78,10 @@ class NotificationOverlay(QWidget):
         self.hide_timer = QTimer()
         self.hide_timer.setSingleShot(True)
         self.hide_timer.timeout.connect(self.close)
-
+        current_theme = config_theme.load_user_theme()
+        
+        style = config_theme.DARK_THEME_STYLE if current_theme == "dark" else config_theme.LIGHT_THEME_STYLE
+        self.setStyleSheet(style)
     def show_animated(self):
         self.show() 
         self.anim.start() 
