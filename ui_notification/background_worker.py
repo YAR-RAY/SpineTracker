@@ -42,7 +42,3 @@ class NotificationManager:
     def open_chat_for_problem(self, problem_type):
         self.active_chat = ChatWindow(problem_type=problem_type)
         self.active_chat.show()
-
-    def _on_notification_clicked(self):
-        self.active_chat = ChatWindow(problem_type=self.last_warning_type)
-        self.active_chat.show()
