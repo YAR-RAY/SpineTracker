@@ -79,10 +79,6 @@ class ChatWindow(QWidget):
         self.setLayout(main_layout)
         
         relax_bridge.relax_trigger.connect(open_relax_window)
-        current_theme = config_theme.load_user_theme()
-        
-        style = config_theme.DARK_THEME_STYLE if current_theme == "dark" else config_theme.LIGHT_THEME_STYLE
-        self.setStyleSheet(style)
         self.generate_initial_greeting()
 
     def generate_initial_greeting(self):

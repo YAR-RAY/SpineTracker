@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 
 SETTINGS_FILE = os.path.join(
@@ -104,7 +105,11 @@ LIGHT_THEME_STYLE = """
     #InfoBlock { color: #555555; }
     #SettingsSeparator { background-color: #CCCCCC; }
 """
-
+if hasattr(sys, '_MEIPASS'):
+    EXE_DIR = os.path.dirname(os.path.abspath(sys.executable))
+    SETTINGS_FILE = os.path.join(EXE_DIR, "user_settings.json")
+else:
+    SETTINGS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "user_settings.json")
 def load_user_theme():
     if os.path.exists(SETTINGS_FILE):
         try:

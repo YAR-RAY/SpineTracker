@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QApplication, QPushButton
 from PyQt6.QtCore import Qt, QTimer
+import ui_notification.configs.config_theme as config_theme
 
 
 WELCOME_WINDOW_WIDTH = 400   
@@ -18,15 +19,6 @@ class WelcomeWindow(QWidget):
             Qt.WindowType.CustomizeWindowHint | 
             Qt.WindowType.WindowCloseButtonHint
         )
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #1E1E1E;
-            }
-            QLabel {
-                font-family: 'Segoe UI', Arial;
-                background: transparent;
-            }
-        """)
         self.setFixedSize(WELCOME_WINDOW_WIDTH, WELCOME_WINDOW_HEIGHT)
         
         screen = QApplication.primaryScreen().geometry()
@@ -43,7 +35,7 @@ class WelcomeWindow(QWidget):
 
                 
         title = QLabel("ИИ-Эргономист запущен!")
-        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #33A1FF;")
+        title.setProperty("class", "heading")
 
         desc = QLabel(
             "Система компьютерного зрения начала скрытный\n"
@@ -53,7 +45,7 @@ class WelcomeWindow(QWidget):
             "Управление и Выход доступны в системном трее\n"
             "    (в правом нижнем углу экрана возле часов)."
         )
-        desc.setStyleSheet("font-size: 13px; line-height: 1.4; color: #E0E0E0;")
+        desc.setProperty("class", "description")
 
         
         layout.addWidget(title, alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)

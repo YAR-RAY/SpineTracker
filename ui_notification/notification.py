@@ -18,7 +18,7 @@ class NotificationOverlay(QWidget):
             Qt.WindowType.WindowCloseButtonHint
         )
         
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setFixedSize(NOTIFICATION_WIDTH, NOTIFICATION_HEIGHT)
         
         self.main_widget = QWidget(self)
@@ -78,10 +78,7 @@ class NotificationOverlay(QWidget):
         self.hide_timer = QTimer()
         self.hide_timer.setSingleShot(True)
         self.hide_timer.timeout.connect(self.close)
-        current_theme = config_theme.load_user_theme()
         
-        style = config_theme.DARK_THEME_STYLE if current_theme == "dark" else config_theme.LIGHT_THEME_STYLE
-        self.setStyleSheet(style)
     def show_animated(self):
         self.show() 
         self.anim.start() 

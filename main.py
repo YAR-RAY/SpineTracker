@@ -5,13 +5,17 @@ from ui_notification.background_worker import NotificationManager
 from tracker.camera import TrackWorker
 from ui_notification.tray_icon import TrayIcon
 from ui_notification.welcome_window import WelcomeWindow
-
+from ui_notification.configs.config_theme import load_user_theme
+import ui_notification.configs.config_theme as config_theme     
 
 
 if __name__ == "__main__":
     ui_manager = NotificationManager()
     qt_app.setQuitOnLastWindowClosed(False)
-    
+    saved_theme = config_theme.load_user_theme()
+    style = config_theme.DARK_THEME_STYLE if saved_theme == "dark" else config_theme.LIGHT_THEME_STYLE
+    qt_app.setStyleSheet(style)
+
     qt_app.tray_icon = TrayIcon(qt_app)
 
     qt_app.welcome = WelcomeWindow()
