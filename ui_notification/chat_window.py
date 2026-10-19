@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QApplication, QWidget, QTextEdit, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QLabel
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QEvent
 
 from ai_assistant.client import health_care_assistant, relax_bridge
 from ui_notification.relax_window import open_relax_window
@@ -127,3 +127,11 @@ class ChatWindow(QWidget):
         
         self.history_area.append(f"<b>ИИ-эргономист:</b> {ai_response}<br>")
         self.history_area.ensureCursorVisible()
+    def changeEvent(self, event):
+        if event.type() == QEvent.Type.ActivationChange:
+            if self.isActiveWindow():
+                if hasattr(self, "input_field") and self.input_field:
+                    self.input_field.setFocus()
+                self.raise_()
+                self.activateWindow()
+        super().changeEvent(event)
