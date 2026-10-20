@@ -1,6 +1,9 @@
 packaging_env/
+.env
+user_settings.json
 build/
 dist/
 *.spec
-user_settings.json
-.env
+*.exe
+__pycache__/
+*.pyc
